@@ -3,7 +3,6 @@ const API_URL = "http://127.0.0.1:8000";
 
 async function sendMessage() {
     const inputField = document.getElementById("user-input");
-    const chatBox = document.getElementById("chat-box");
     const question = inputField.value;
 
     if (question.trim() === "") return;
@@ -13,23 +12,36 @@ async function sendMessage() {
     inputField.value = ""; // Clear input
 
     // 2. Show "Thinking..." temporary message
-    const loadingId = addMessage("Thinking...", "bot-message");
+    const loadingId = addMessage('<span class="typing-indicator">Analyzing Constitution</span>', "bot-message");
 
     try {
-        // 3. Send Request to Member A's Backend
+        // 3. Send Request to Backend
         const response = await fetch(`${API_URL}/search?query=${encodeURIComponent(question)}`);
         const data = await response.json();
 
-        // 4. Remove "Thinking..." and Show Real Answer
+        // 4. Remove "Thinking..."
         removeMessage(loadingId);
         
-        // Format the answer nicely
-        const finalAnswer = `<strong>${data.result}</strong><br><br><small>Source: ${data.source}</small>`;
-        addMessage(finalAnswer, "bot-message");
+        // 5. Format the Answer
+        // 'marked.parse' converts **bold** to <b>bold</b> and * lists to <li>
+        let formattedText = "";
+        if (data.result) {
+            formattedText = marked.parse(data.result);
+        } else {
+            formattedText = "I could not find an answer.";
+        }
+
+        // Create the final HTML structure
+        const finalHTML = `
+            <div class="formatted-content">${formattedText}</div>
+            <div class="source-citation"><small>Source: ${data.source || "Samvidhan AI Legal Database"}</small></div>
+        `;
+
+        addMessage(finalHTML, "bot-message");
 
     } catch (error) {
         removeMessage(loadingId);
-        addMessage("Error: Could not connect to backend. Is Member A's server running?", "bot-message");
+        addMessage("Error: Could not connect to backend. Is the Python server running?", "bot-message");
         console.error(error);
     }
 }
