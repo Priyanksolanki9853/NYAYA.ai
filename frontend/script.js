@@ -1,71 +1,103 @@
 // This URL must match where Member A is running the backend
 const API_URL = "http://127.0.0.1:8000"; 
-
 async function sendMessage() {
     const inputField = document.getElementById("user-input");
-    const question = inputField.value;
+    const modeSelect = document.getElementById("mode-select"); // Get the switch
+    const chatContainer = document.getElementById("chat-container");
+    
+    const message = inputField.value.trim();
+    const mode = modeSelect.value; // Get the selected mode ("constitution" or "bns")
 
-    if (question.trim() === "") return;
+    if (message === "") return;
 
-    // 1. Show User Message on Screen
-    addMessage(question, "user-message");
-    inputField.value = ""; // Clear input
+    // Add User Message
+    addMessage(message, "user-message");
+    inputField.value = "";
 
-    // 2. Show "Thinking..." temporary message
-    const loadingId = addMessage('<span class="typing-indicator">Analyzing Constitution</span>', "bot-message");
+    // Add Loading Animation
+    const loadingId = addMessage('<span class="typing-indicator">Consulting Legal Archives...</span>', "bot-message");
 
     try {
-        // 3. Send Request to Backend
-        const response = await fetch(`${API_URL}/search?query=${encodeURIComponent(question)}`);
+        // SEND MODE TO BACKEND
+        const response = await fetch(`http://127.0.0.1:8000/search?query=${encodeURIComponent(message)}&mode=${mode}`);
         const data = await response.json();
 
-        // 4. Remove "Thinking..."
-        removeMessage(loadingId);
+        // Remove loading
+        const loadingMsg = document.getElementById(loadingId);
+        if (loadingMsg) loadingMsg.remove();
+
+        // Format and Show Bot Message
+        // Convert **bold** markdown to HTML bold
+        let formattedText = data.result.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+        formattedText = formattedText.replace(/\n/g, '<br>'); // Handle newlines
+
+        addMessage(formattedText, "bot-message");
         
-        // 5. Format the Answer
-        // 'marked.parse' converts **bold** to <b>bold</b> and * lists to <li>
-        let formattedText = "";
-        if (data.result) {
-            formattedText = marked.parse(data.result);
-        } else {
-            formattedText = "I could not find an answer.";
+        if (data.source) {
+            addMessage(`<small style="color: #666; font-size: 0.8em;">📚 ${data.source}</small>`, "bot-message");
         }
 
-        // Create the final HTML structure
-        const finalHTML = `
-            <div class="formatted-content">${formattedText}</div>
-            <div class="source-citation"><small>Source: ${data.source || "Samvidhan AI Legal Database"}</small></div>
-        `;
-
-        addMessage(finalHTML, "bot-message");
-
     } catch (error) {
-        removeMessage(loadingId);
-        addMessage("Error: Could not connect to backend. Is the Python server running?", "bot-message");
         console.error(error);
+        const loadingMsg = document.getElementById(loadingId);
+        if (loadingMsg) loadingMsg.remove();
+        addMessage("⚠️ Connection Error. Ensure Backend is running.", "bot-message");
     }
 }
 
-// Helper function to add bubbles to the chat
 function addMessage(text, className) {
-    const chatBox = document.getElementById("chat-box");
-    const msgDiv = document.createElement("div");
-    msgDiv.className = `message ${className}`;
-    msgDiv.innerHTML = text; // Using innerHTML to allow bold text/breaks
-    msgDiv.id = "msg-" + Date.now();
-    chatBox.appendChild(msgDiv);
-    chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to bottom
-    return msgDiv.id;
+    const chatContainer = document.getElementById("chat-container");
+    const div = document.createElement("div");
+    div.className = `message ${className}`;
+    div.innerHTML = text; // Use innerHTML to render bold tags
+    chatContainer.appendChild(div);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    return div.id = "msg-" + Date.now();
 }
 
-function removeMessage(id) {
-    const msg = document.getElementById(id);
-    if (msg) msg.remove();
-}
+// --- SPEECH TO TEXT FUNCTION ---
+function startListening() {
+    const micBtn = document.getElementById("mic-btn");
+    const inputField = document.getElementById("user-input");
 
-// Allow pressing "Enter" key to send
-document.getElementById("user-input").addEventListener("keypress", function(event) {
-    if (event.key === "Enter") {
-        sendMessage();
+    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+        alert("Your browser does not support Voice Search. Please use Google Chrome.");
+        return;
     }
-});
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-IN"; 
+    recognition.interimResults = false;
+
+    recognition.onstart = function() {
+        micBtn.classList.add("listening");
+        inputField.placeholder = "Listening... (Check Mic Permission)";
+    };
+
+    recognition.onend = function() {
+        micBtn.classList.remove("listening");
+        inputField.placeholder = "Ask e.g., 'What is Article 21?'";
+    };
+
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        inputField.value = transcript;
+        console.log("Heard:", transcript);
+    };
+
+    recognition.onerror = function(event) {
+        console.error("Mic Error:", event.error); // <--- CHECK THIS IN CONSOLE
+        
+        if (event.error === 'not-allowed') {
+            alert("Microphone access blocked. Please click the Lock icon 🔒 in the URL bar and Allow Microphone.");
+        } else if (event.error === 'no-speech') {
+            alert("No speech detected. Please speak closer to the mic.");
+        } else {
+            alert("Voice Error: " + event.error);
+        }
+    };
+
+    recognition.start();
+}

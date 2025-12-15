@@ -1,0 +1,30 @@
+[
+  {
+    "topic": "Murder",
+    "ipc": "Section 302",
+    "bns": "Section 103",
+    "desc": "Punishment for murder. The definition remains largely similar but creates new categories for mob lynching.",
+    "keywords": ["murder", "kill", "302", "killed", "hatya"]
+  },
+  {
+    "topic": "Cheating",
+    "ipc": "Section 420",
+    "bns": "Section 318",
+    "desc": "Cheating and dishonestly inducing delivery of property. The famous number '420' is replaced by 318.",
+    "keywords": ["cheating", "fraud", "420", "scam", "dhoka"]
+  },
+  {
+    "topic": "Sedition (Desh Droh)",
+    "ipc": "Section 124A",
+    "bns": "Section 152",
+    "desc": "Replaces Sedition with 'Acts endangering sovereignty'. It removes the word sedition but punishes secessionist activities severely.",
+    "keywords": ["sedition", "treason", "anti-national", "desh droh", "government"]
+  },
+  {
+    "topic": "Rape",
+    "ipc": "Section 375/376",
+    "bns": "Section 63",
+    "desc": "Sexual intercourse by a man with a woman against her will. The new code provides stricter timelines for investigation.",
+    "keywords": ["rape", "sexual assault", "assault"]
+  }
+]

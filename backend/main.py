@@ -1,10 +1,10 @@
 import os
+import json
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from pinecone import Pinecone
-# NEW: Import HuggingFace
 from langchain_huggingface import HuggingFaceEmbeddings
 
 load_dotenv()
@@ -21,60 +21,92 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-print("🔌 Connecting to AI Services...")
-
-# 1. Setup Pinecone
+# 1. Setup Services
 pc = Pinecone(api_key=PINECONE_API_KEY)
 index = pc.Index("samvidhan-index")
-
-# 2. Setup Embeddings (LOCAL - Matches ingest.py)
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
 
-# 3. Setup Gemini (Still used for ANSWERING, but not embedding)
-# This uses very little quota, so it shouldn't crash.
+# --- CHANGE IS HERE: Use 'gemini-1.5-flash' (Higher limits, Faster) ---
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", google_api_key=GOOGLE_API_KEY)
 
-print("✅ Services Connected!")
-
-@app.get("/")
-def read_root():
-    return {"status": "Samvidhan AI (Hybrid Engine) Online"}
+# 2. Load BNS Data
+bns_path = "data/bns_mapping.json"
+if os.path.exists(bns_path):
+    with open(bns_path, "r") as f:
+        BNS_DATA = json.load(f)
+else:
+    BNS_DATA = [] # Fallback if file missing
 
 @app.get("/search")
-def search_law(query: str):
-    print(f"\n🔎 User asked: {query}")
+def search_law(query: str, mode: str = "constitution"):
+    print(f"\n🔎 User asked: {query} [Mode: {mode}]")
     
-    try:
-        # STEP 1: Search using Local Embeddings
-        query_vector = embeddings.embed_query(query)
-        search_results = index.query(vector=query_vector, top_k=3, include_metadata=True)
-        
-        context_text = ""
-        sources = []
-        for match in search_results['matches']:
-            if match['score'] > 0.30: # Slightly lower threshold for this model
-                context_text += match['metadata']['text'] + "\n\n"
-                sources.append(match['id'])
+    # --- MODE A: CONSTITUTION (RAG) ---
+    if mode == "constitution":
+        print(f"\n🔎 User asked: {query}")
+    
+        try:
+            # STEP 1: Search using Local Embeddings
+            query_vector = embeddings.embed_query(query)
+            search_results = index.query(vector=query_vector, top_k=3, include_metadata=True)
+            
+            context_text = ""
+            sources = []
+            for match in search_results['matches']:
+                if match['score'] > 0.30: # Slightly lower threshold for this model
+                    context_text += match['metadata']['text'] + "\n\n"
+                    sources.append(match['id'])
 
-        if not context_text:
-            return {"result": "I couldn't find a specific law for that. Try asking about 'Rights' or 'Arrest'.", "source": "No Match"}
+            if not context_text:
+                return {"result": "I couldn't find a specific law for that. Try asking about 'Rights' or 'Arrest'.", "source": "No Match"}
 
-        # STEP 2: Answer using Gemini
-        print(f"   📚 Found context: {sources}")
-        prompt = f"""
-        You are a legal expert. Answer the user based ONLY on this context from the Indian Constitution:
-        {context_text}
+            # STEP 2: Answer using Gemini
+            print(f"   📚 Found context: {sources}")
+            prompt = f"""
+            You are a legal expert. Answer the user based ONLY on this context from the Indian Constitution:
+            {context_text}
+            
+            Question: {query}
+            3. Keep it simple and mention the Article number.
+            """
+            
+            response = llm.invoke(prompt)
+            
+            return {
+                "result": response.content,
+                "source": f"Sources: Article {', '.join(sources)}"
+            }
         
-        Question: {query}
-        """
-        
-        response = llm.invoke(prompt)
-        
-        return {
-            "result": response.content,
-            "source": f"Sources: Article {', '.join(sources)}"
-        }
+        except Exception as e:
+            print(f"❌ Error: {e}")
+            return {"result": "System Error. Please check backend logs.", "source": "Error"}   
 
-    except Exception as e:
-        print(f"❌ Error: {e}")
-        return {"result": "System Error. Please check backend logs.", "source": "Error"}
+    # --- MODE B: IPC vs BNS (New Laws) ---
+    elif mode == "bns":
+        query = query.lower()
+        found_law = None
+        
+        for law in BNS_DATA:
+            for keyword in law["keywords"]:
+                if keyword in query:
+                    found_law = law
+                    break
+            if found_law: break
+        
+        if found_law:
+            return {
+                "result": f"""
+                **Topic:** {found_law['topic']}
+                
+                🔴 **Old Law (IPC):** {found_law['ipc']}
+                🟢 **New Law (BNS):** {found_law['bns']}
+                
+                **Change:** {found_law['desc']}
+                """,
+                "source": "Bhartiya Nyaya Sanhita (2023)"
+            }
+        else:
+            return {
+                "result": "I have data for Murder (302), Cheating (420), Sedition, and Rape. Ask me about one of those.",
+                "source": "BNS Database"
+            }
