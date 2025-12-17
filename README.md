@@ -13,14 +13,14 @@
 ### 🏠 Landing Dashboard
 The gateway to legal intelligence, featuring real-time updates and core legal metrics.
 
-![NYAYA.ai Home]<img width="1832" height="1042" alt="Screenshot 2025-12-17 222043" src="https://github.com/user-attachments/assets/463acd4d-27d3-40c8-9871-1ecc07dc2ffc" /> 
+<img width="1832" height="1042" alt="Screenshot 2025-12-17 222043" src="https://github.com/user-attachments/assets/463acd4d-27d3-40c8-9871-1ecc07dc2ffc" /> 
 
 *Current Scale: 395+ Articles | 15,000+ Precedents | 98% Accuracy*
 
 ### 💬 BNS Code Conversational AI
 An advanced chat interface for deep legal querying, document analysis, and simplified explanations.
 
-![BNS Code Chat]<img width="1881" height="1038" alt="Screenshot 2025-12-17 222133" src="https://github.com/user-attachments/assets/1867695a-84fd-4f60-a58b-2863fc2f2960" /> 
+<img width="1881" height="1038" alt="Screenshot 2025-12-17 222133" src="https://github.com/user-attachments/assets/1867695a-84fd-4f60-a58b-2863fc2f2960" /> 
 
 *Example: Real-time analysis of Article 21 (Protection of Life and Personal Liberty).*
 
@@ -121,11 +121,15 @@ samvidhan-ai/
 
 ## Roadmap & Future Vision
 
-| [x] Phase 1: Core RAG pipeline and BNS/IPC mapping. |
-| [x] Phase 2: Automated Document Drafting. |
-| [ ] Phase 3: Support for 12+ regional Indian languages via Whisper API. |
-| [ ] Phase 4: Fine-tuning on 50,000+ landmark Supreme Court judgments. |
-| [ ] Phase 5: Mobile App (iOS/Android) using Flutter. |
+[x] Phase 1: Core RAG pipeline and BNS/IPC mapping.
+
+[x] Phase 2: Automated Document Drafting.
+
+[ ] Phase 3: Support for 12+ regional Indian languages via Whisper API.
+
+[ ] Phase 4: Fine-tuning on 50,000+ landmark Supreme Court judgments.
+
+[ ] Phase 5: Mobile App (iOS/Android) using Flutter.
 
 ---
 
