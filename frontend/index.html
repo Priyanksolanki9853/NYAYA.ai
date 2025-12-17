@@ -1,38 +1,1566 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Samvidhan AI</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="main-container">
-      <h1>🇮🇳 Samvidhan AI</h1>
+    <title>NYAYA.ai - Constitution & Legal Intelligence</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
 
-      <div class="controls" style="margin-bottom: 15px; text-align: center">
-        <label for="mode-select" style="font-weight: bold; color: #333"
-          >Select Mode:</label
-        >
-        <select
-          id="mode-select"
-          style="padding: 8px; border-radius: 5px; border: 1px solid #ccc"
-        >
-          <option value="constitution">📜 Constitution (Rights)</option>
-          <option value="bns">⚖️ IPC vs BNS (New Laws)</option>
-        </select>
-      </div>
+    <style>
+        /* --- 1. THEME VARIABLES (SPINX INSPIRED - DARK/TEAL) --- */
+        /* --- 1. THEME VARIABLES (JUSTICE & CONSTITUTION THEME) --- */
+        :root {
+            /* DARK MODE (Default) - Deep Slate & Gold */
+            /* Background is no longer pitch black, but a rich 'Judge's Robe' dark grey/blue */
+            --bg-dark: #0f172a; 
+            --glass-panel: rgba(15, 23, 42, 0.95); 
+            --glass-border: rgba(212, 175, 55, 0.3); /* Metallic Gold Border */
+            
+            /* Primary is now 'Constitution Gold' - Highly visible and authoritative */
+            --primary: #fbbf24; 
+            --primary-glow: rgba(251, 191, 36, 0.25);
+            
+            /* Gradient goes from Gold to Bronze */
+            --accent-gradient: linear-gradient(135deg, #fbbf24 0%, #b45309 100%);
+            
+            --text-main: #f8fafc; /* Off-white for less eye strain */
+            --text-dim: #94a3b8;  /* Muted blue-grey */
+            --nav-bg: rgba(15, 23, 42, 0.95);
+            --shadow-card: 0 15px 35px -10px rgba(0,0,0,0.6);
+            --transition-smooth: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-      <div class="chat-container" id="chat-container">
-        <div class="message bot-message">
-          Namaste! I am your legal assistant. Select a mode above to start.
-        </div>
+        body.light-mode {
+            /* LIGHT MODE - Parchment & Royal Indigo */
+            /* Background is 'Legal Pad' or 'Parchment' white, not harsh clinical white */
+            --bg-dark: #f8f7f2; 
+            --glass-panel: rgba(255, 255, 255, 0.95);
+            --glass-border: rgba(30, 58, 138, 0.15); /* Subtle Navy Border */
+            
+            /* Primary is 'Supreme Court Blue' - Trustworthy and Official */
+            --primary: #1e3a8a; 
+            --primary-glow: rgba(30, 58, 138, 0.1);
+            
+            /* Gradient goes from Royal Blue to Deep Purple */
+            --accent-gradient: linear-gradient(135deg, #1e3a8a 0%, #4f46e5 100%);
+            
+            --text-main: #0f172a; /* Ink Black */
+            --text-dim: #475569;  /* Pencil Grey */
+            --nav-bg: rgba(255, 255, 255, 0.95);
+            --shadow-card: 0 15px 35px -10px rgba(30, 58, 138, 0.15);
 
-        <div class="input-area">
-            <input type="text" id="user-input" placeholder="Type your question here...">
-            <button onclick="sendMessage()">Ask</button>
+            
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden; 
+            overflow-y: auto; 
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.5s, color 0.5s;
+        }
+
+        
+        /* --- CINEMATIC BACKGROUND VIDEO --- */
+#bg-video {
+    position: fixed; 
+    top: 0; left: 0;
+    width: 100vw; 
+    height: 100vh;
+    z-index: -5;
+    object-fit: cover; /* Ensures it covers the screen like a movie */
+    
+    /* Cinematic Visibility Settings */
+    opacity: 0.6; /* Higher opacity to show off the book details */
+    
+    /* Subtle polish: boosts contrast and warmth slightly without ruining original colors */
+    filter: contrast(1.1) saturate(1.1) brightness(0.8);
+    
+    transition: opacity 1s ease;
+}
+
+/* --- CINEMATIC DUST ATMOSPHERE --- */
+#dust-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: -4; /* Sits on top of video (-5) but behind content */
+    pointer-events: none; /* Crucial: lets clicks pass through to buttons */
+    overflow: hidden;
+}
+
+.dust-layer {
+    position: absolute;
+    background: transparent;
+    border-radius: 50%;
+}
+
+/* LAYER 1: Smallest, slowest particles (The "Background" Dust) */
+.dust-layer.small {
+    width: 1px; height: 1px;
+    animation: floatUp 100s linear infinite;
+    box-shadow: 
+        10vw 10vh #fff, 20vw 80vh #fff, 85vw 15vh #fff, 
+        40vw 40vh #fff, 90vw 90vh #fff, 15vw 60vh #fff,
+        60vw 20vh #fff, 30vw 50vh #fff, 70vw 80vh #fff,
+        50vw 10vh #fff, 80vw 40vh #fff, 25vw 90vh #fff;
+    opacity: 0.3; /* Very faint */
+}
+
+/* LAYER 2: Medium particles (The "Mid-ground" Dust) */
+.dust-layer.medium {
+    width: 2px; height: 2px;
+    animation: floatUp 150s linear infinite;
+    box-shadow: 
+        15vw 15vh rgba(251, 191, 36, 0.4), /* Subtle Gold Tint */
+        80vw 25vh rgba(251, 191, 36, 0.4), 
+        30vw 70vh rgba(251, 191, 36, 0.4), 
+        60vw 90vh rgba(251, 191, 36, 0.4), 
+        45vw 40vh rgba(251, 191, 36, 0.4);
+    opacity: 0.4;
+}
+
+/* LAYER 3: Large, out-of-focus particles (The "Foreground" Dust) */
+.dust-layer.large {
+    width: 3px; height: 3px;
+    animation: floatUp 200s linear infinite;
+    filter: blur(1px); /* Blurs them for depth of field */
+    box-shadow: 
+        50vw 50vh rgba(255, 255, 255, 0.5), 
+        10vw 90vh rgba(255, 255, 255, 0.5), 
+        90vw 10vh rgba(255, 255, 255, 0.5);
+    opacity: 0.5;
+}
+
+/* The Floating Animation */
+@keyframes floatUp {
+    from { transform: translateY(0px); }
+    to { transform: translateY(-100vh); }
+}
+
+/* Optional: Make it slightly brighter in Light Mode */
+body.light-mode #bg-video {
+    opacity: 0.25; /* Lower opacity for light mode so text remains readable */
+    filter: sepia(0.5) contrast(1.0); /* Fades it into the parchment background */
+}
+
+        .bg-wallpaper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            /* Spinx-style dark overlay */
+            background: radial-gradient(circle at center, rgba(20, 30, 40, 0.4) 0%, var(--bg-dark) 90%);
+            z-index: -4; transition: all 0.8s ease;
+            backdrop-filter: blur(0px);
+        }
+        .bg-wallpaper.active { backdrop-filter: blur(15px); background: rgba(17, 17, 17, 0.95); }
+        body.light-mode .bg-wallpaper.active { background: rgba(244, 244, 244, 0.95); }
+
+        /* --- PRELOADER --- */
+        #preloader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark); z-index: 10000;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+        }
+        .preloader-content-wrapper {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        #preloader.zoom-out-exit { opacity: 0; pointer-events: none; }
+        #preloader.zoom-out-exit .preloader-content-wrapper { transform: scale(0.8); }
+        
+        .splash-logo-img {
+            width: 140px; height: 140px; border-radius: 50%; object-fit: cover;
+            border: 3px solid var(--primary); box-shadow: 0 0 40px var(--primary-glow);
+            margin-bottom: 25px; animation: pulseLogo 2s infinite ease-in-out;
+        }
+        @keyframes pulseLogo {
+            0% { box-shadow: 0 0 20px var(--primary-glow); }
+            50% { box-shadow: 0 0 50px var(--primary-glow); }
+            100% { box-shadow: 0 0 20px var(--primary-glow); }
+        }
+
+        .loader-logo { font-family: 'Playfair Display', serif; font-size: 3.5rem; color: var(--text-main); }
+        .loader-logo span { color: var(--primary); }
+        .loader-line { width: 0%; height: 3px; background: var(--primary); margin-top: 20px; animation: loadLine 1.5s ease-in-out forwards; }
+        @keyframes loadLine { to { width: 200px; } }
+
+        .transition-curtain {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #111; /* Solid Black Curtain */
+            z-index: 5000; transform: translateY(100%); pointer-events: none;
+        }
+        .transition-curtain.active { animation: curtainSwipe 1.2s cubic-bezier(0.7, 0, 0.3, 1) forwards; }
+        @keyframes curtainSwipe { 0% { transform: translateY(100%); } 40% { transform: translateY(0); } 60% { transform: translateY(0); } 100% { transform: translateY(-100%); } }
+
+        /* --- LAYOUT --- */
+        .main-wrapper { 
+            width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px 140px 20px; position: relative; 
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease; /* For Side Animation */
+        }
+        
+        /* SIDE OPEN ANIMATION STATE */
+        body.workspace-open .main-wrapper {
+            transform: translateX(40px) scale(0.95);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .top-center-header {
+            text-align: center; padding: 25px 0; position: sticky; top: 0; z-index: 200;
+            background: linear-gradient(to bottom, var(--bg-dark) 20%, transparent);
+            display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(8px); margin-bottom: 20px;
+        }
+        .header-brand { 
+            font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--text-main); 
+            font-weight: 700; letter-spacing: 1px; display: flex; align-items: center; gap: 15px; 
+        }
+        .header-logo-small {
+            height: 45px; width: 45px; border-radius: 50%; object-fit: cover; 
+            border: 2px solid var(--primary); box-shadow: 0 0 10px var(--primary-glow);
+        }
+        .header-controls { display: flex; gap: 10px; }
+        .control-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+            color: var(--text-dim); padding: 8px 16px; border-radius: 20px;
+            font-size: 0.85rem; cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; gap: 8px; font-weight: 600;
+        }
+        .control-btn:hover { border-color: var(--primary); color: var(--text-main); background: rgba(0, 229, 255, 0.1); }
+        body.light-mode .control-btn { background: rgba(0,0,0,0.05); }
+
+        /* --- NEW FEATURE: LEGAL NEWS TICKER --- */
+        .news-ticker {
+            background: var(--glass-panel);
+            border-bottom: 1px solid var(--glass-border);
+            border-top: 1px solid var(--glass-border);
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 8px 0;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        body.light-mode .news-ticker { background: rgba(255,255,255,0.9); }
+        
+        .ticker-content {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 30s linear infinite;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+        .ticker-content span { margin-right: 50px; color: var(--text-main); }
+        .ticker-content span strong { color: var(--primary); }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+        /* --- NEW FEATURE: EMERGENCY SOS BUTTON --- */
+        .sos-wrapper {
+            position: fixed;
+            bottom: 110px; /* Sits above bottom nav */
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: flex-end;
+            gap: 15px;
+        }
+        .sos-btn {
+            background: #ef4444;
+            color: white;
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            border: none;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+            cursor: pointer;
+            font-size: 1.5rem;
+            animation: pulse-red 2s infinite;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.3s;
+        }
+        .sos-btn:hover { transform: scale(1.1); }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        
+        .sos-menu {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            gap: 10px;
+        }
+        .sos-menu.active { display: flex; }
+        
+        .sos-link {
+            background: var(--glass-panel);
+            color: var(--text-main);
+            padding: 12px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            border: 1px solid #ef4444;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: 0.3s;
+            opacity: 0; animation: slideInSos 0.3s forwards;
+        }
+        .sos-link:hover { background: #ef4444; color: white; }
+        @keyframes slideInSos { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- HERO --- */
+        .hero-section { text-align: center; padding: 60px 0 40px; margin-bottom: 20px; position: relative; }
+        .hero-subtitle {
+            color: var(--primary); font-size: 0.9rem; letter-spacing: 4px; text-transform: uppercase; font-weight: 700; margin-bottom: 25px;
+            border: 1px solid var(--primary); padding: 6px 18px; border-radius: 50px; display: inline-block;
+            background: rgba(0, 229, 255, 0.1);
+        }
+        .hero-title {
+            font-size: 4.8rem; line-height: 1.1; margin-bottom: 30px; font-family: 'Playfair Display', serif;
+            /* Spinx-style Gradient */
+            background: linear-gradient(to right, #ffffff 20%, #90caf9 40%, #00e5ff 60%, #ffffff 80%);
+            background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: textShimmer 5s linear infinite;
+        }
+        @keyframes textShimmer { to { background-position: 200% center; } }
+        body.light-mode .hero-title {
+            background: linear-gradient(to right, #1a237e 20%, #0277bd 40%, #00b8d4 60%, #1a237e 80%);
+            background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero-desc { font-size: 1.25rem; color: var(--text-dim); max-width: 750px; margin: 0 auto 40px; line-height: 1.8; }
+
+        .live-counter-box {
+            display: inline-flex; gap: 40px; margin-bottom: 40px; padding: 15px 30px;
+            background: rgba(255,255,255,0.03); border-radius: 50px; border: 1px solid var(--glass-border);
+            backdrop-filter: blur(5px);
+        }
+        body.light-mode .live-counter-box { background: rgba(0,0,0,0.05); }
+        .counter-item { text-align: center; }
+        .counter-val { font-size: 1.5rem; font-weight: 800; color: var(--primary); font-family: 'Playfair Display', serif; display: block; }
+        .counter-lbl { font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1px; }
+
+        /* --- OFFICIAL BADGE STRIP --- */
+        .logo-strip { padding: 20px 0 60px; text-align: center; position: relative; z-index: 5; }
+        .logo-strip p {
+            font-size: 0.8rem; color: var(--text-dim); letter-spacing: 3px;
+            text-transform: uppercase; margin-bottom: 30px; font-weight: 700; opacity: 0.8;
+        }
+        .logo-grid { display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; }
+
+        .gov-badge {
+            display: flex; align-items: center; gap: 15px;
+            background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border);
+            padding: 15px 25px; border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); cursor: default; min-width: 180px;
+        }
+        .gov-badge i { font-size: 1.8rem; transition: transform 0.3s ease; }
+        .gov-badge span { 
+            font-weight: 700; font-family: 'Manrope', sans-serif; font-size: 0.95rem; 
+            text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-main);
+        }
+        .badge-orange i { color: #ff9933; text-shadow: 0 0 15px rgba(255, 153, 51, 0.3); }
+        .badge-blue i   { color: #3b82f6; text-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
+        .badge-green i  { color: #10b981; text-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }
+        .badge-red i    { color: #ef4444; text-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+        .badge-gold i   { color: #d4af37; text-shadow: 0 0 15px rgba(212, 175, 55, 0.3); }
+        .badge-teal i   { color: #14b8a6; text-shadow: 0 0 15px rgba(20, 184, 166, 0.3); }
+
+        .gov-badge:hover {
+            transform: translateY(-5px); background: rgba(255, 255, 255, 0.08);
+            border-color: var(--text-dim); box-shadow: 0 10px 30px -5px rgba(0,0,0,0.3);
+        }
+        .gov-badge:hover i { transform: scale(1.1); }
+        body.light-mode .gov-badge { background: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05); }
+        body.light-mode .gov-badge:hover { box-shadow: 0 10px 25px rgba(0,0,0,0.1); background: #ffffff; }
+
+        /* --- PROCESS SECTION --- */
+        .process-section {
+            padding: 60px 0; border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 80px; text-align: center;
+        }
+        .process-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-top: 40px; }
+        .process-step {
+            position: relative; padding: 20px; opacity: 0.3; transform: translateY(20px); 
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .process-step.active-step { opacity: 1; transform: translateY(0); }
+        .step-number {
+            font-size: 4rem; font-weight: 800; color: rgba(255,255,255,0.03); position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            z-index: 0; font-family: 'Playfair Display', serif; transition: color 0.4s ease;
+        }
+        body.light-mode .step-number { color: rgba(0,0,0,0.05); }
+        .process-step.active-step .step-number { color: rgba(0, 229, 255, 0.1); }
+        .step-icon {
+            font-size: 2rem; color: var(--primary); margin-bottom: 15px; position: relative; z-index: 1;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.0));
+            width: 60px; height: 60px; line-height: 60px; border-radius: 50%; margin: 0 auto 20px;
+            border: 1px solid var(--glass-border); transition: all 0.5s ease;
+        }
+        body.light-mode .step-icon { background: linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0)); }
+        .process-step.active-step .step-icon {
+            background: var(--primary); color: #f8fafc; box-shadow: 0 0 25px var(--primary-glow); border-color: transparent;
+        }
+        .step-title { font-weight: 700; margin-bottom: 10px; color: var(--text-main); position: relative; z-index: 1; }
+        .step-desc { font-size: 0.9rem; color: var(--text-dim); position: relative; z-index: 1; }
+
+        /* --- CARDS --- */
+        .glass-container {
+            background: var(--glass-panel); backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 20px;
+            padding: 50px; margin-bottom: 50px; box-shadow: var(--shadow-card);
+            position: relative; overflow: hidden;
+        }
+        .glass-container::before {
+            content: ''; position: absolute; top: 0; left: -50%; width: 100%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.03), transparent);
+            transform: skewX(-25deg); pointer-events: none;
+        }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 30px; }
+        .card {
+            background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border);
+            padding: 35px 30px; border-radius: 16px; cursor: pointer; transition: 0.4s;
+            display: flex; flex-direction: column; align-items: flex-start; height: 100%;
+            position: relative; overflow: hidden;
+            transform-style: preserve-3d; transform: perspective(1000px);
+        }
+        body.light-mode .card { background: rgba(0,0,0,0.02); }
+        .card-icon { 
+            font-size: 2.2rem; color: var(--primary); margin-bottom: 25px; 
+            background: rgba(255,255,255,0.05); padding: 15px; border-radius: 14px; 
+            transition: 0.4s; transform: translateZ(20px);
+        }
+        body.light-mode .card-icon { background: rgba(0,0,0,0.05); }
+        .card h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 15px; color: var(--text-main); transform: translateZ(10px); }
+        .card p { color: var(--text-dim); font-size: 1rem; line-height: 1.6; transform: translateZ(5px); }
+
+        /* --- SECTIONS --- */
+        .info-grid-row {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
+            align-items: center; margin: 80px 0;
+        }
+        .info-grid-row.reverse { direction: rtl; }
+        .info-grid-row.reverse .text-content { direction: ltr; }
+        
+        .section-tag { 
+            color: var(--primary); font-weight: 800; letter-spacing: 2px; 
+            text-transform: uppercase; font-size: 0.85rem; margin-bottom: 10px; display: block; opacity: 0.8; 
+        }
+        .section-heading { 
+            font-family: 'Playfair Display', serif; font-size: 3rem; margin-bottom: 25px; margin-top: 0; color: var(--text-main); line-height: 1.2; 
+        }
+        .section-text { color: var(--text-dim); font-size: 1.15rem; line-height: 1.85; margin-bottom: 25px; text-align: justify; }
+        
+        .content-title {
+            font-family: 'Playfair Display', serif; font-size: 2.2rem; color: var(--text-main);
+            margin-bottom: 15px; display: flex; align-items: center; gap: 15px;
+        }
+        .content-title i { color: var(--primary); }
+        .content-body { font-size: 1.1rem; color: var(--text-dim); margin-bottom: 30px; }
+
+        .law-image-box {
+            width: 100%; height: 400px; border-radius: 20px; overflow: hidden;
+            border: 1px solid var(--glass-border); box-shadow: 0 20px 50px -10px rgba(0,0,0,0.6);
+            position: relative;
+        }
+        .law-image-box img { width: 100%; height: 100%; object-fit: cover; transition: 0.7s ease; }
+        .law-image-box:hover img { transform: scale(1.08); }
+
+        .tech-explained {
+            background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 30px 40px; border-radius: 20px; margin-top: 10px; 
+        }
+        body.light-mode .tech-explained { background: rgba(0,0,0,0.02); }
+        .tech-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .tech-list li { display: flex; align-items: flex-start; gap: 15px; color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; }
+        .tech-list li i { color: var(--primary); margin-top: 5px; }
+
+        /* --- BOTTOM NAV --- */
+        .bottom-nav {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: var(--nav-bg); backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 8px 15px; border-radius: 50px;
+            display: flex; gap: 8px; z-index: 1000;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        }
+        .b-nav-btn {
+            background: transparent; border: none; color: var(--text-dim);
+            padding: 10px 24px; border-radius: 30px; cursor: pointer;
+            font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 0.9rem;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            transition: 0.3s; min-width: 75px;
+        }
+        .b-nav-btn i { font-size: 1.2rem; margin-bottom: 2px; transition: 0.3s; }
+        .b-nav-btn span { font-size: 0.7rem; letter-spacing: 0.5px; opacity: 0.7; }
+        
+        .b-nav-btn:hover { color: var(--text-main); background: rgba(255,255,255,0.05); }
+        body.light-mode .b-nav-btn:hover { background: rgba(0,0,0,0.05); }
+        .b-nav-btn:hover i { transform: translateY(-2px); }
+        .b-nav-btn.active { background: var(--primary); color: #f8fafc; box-shadow: 0 0 25px var(--primary-glow); }
+        .b-nav-btn.active span { opacity: 1; font-weight: 700; }
+
+        /* --- WORKSPACE (SIDE OPEN ANIMATION) --- */
+        #app-workspace {
+            display: none; flex-direction: column;
+            position: fixed; 
+            top: 0; 
+            right: 0; /* Slide from Right */
+            width: 50%; /* Start as split screen or full depending on preference, logic below handles responsive */
+            min-width: 600px;
+            height: 100%;
+            background: var(--bg-dark); 
+            z-index: 5000;
+            box-shadow: -10px 0 50px rgba(0,0,0,0.5);
+            border-left: 1px solid var(--glass-border);
+            animation: slideInRight 0.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+            transition: transform 0.5s ease;
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        /* Adjust main wrapper when workspace is open */
+        body.workspace-open .main-wrapper {
+            transform: translateX(-10%) scale(0.95);
+            opacity: 0.6;
+            filter: blur(2px);
+            pointer-events: none; /* Disable clicking background */
+        }
+        
+        .workspace-header { display: flex; justify-content: space-between; padding: 20px 40px; border-bottom: 1px solid var(--glass-border); align-items: center; background: rgba(0,0,0,0.2); }
+        .ws-title { font-size: 1.5rem; color: var(--primary); font-family: 'Playfair Display', serif; display: flex; align-items: center; gap: 15px; }
+        #chat-wrapper { flex: 1; overflow-y: hidden; position: relative; width: 100%; }
+        .workspace-footer { padding: 20px 30px 30px; border-top: 1px solid var(--glass-border); width: 100%; background: transparent; }
+        
+
+        /* --- MAXIMIZE STATE --- */
+#app-workspace.workspace-maximized {
+    width: 100% !important;
+    min-width: 100% !important;
+    border-left: none;
+}
+
+        /* --- CHAT TAB LOGIC --- */
+        .chat-tab {
+            display: none; /* Hidden by default */
+            height: 100%;
+            overflow-y: auto;
+            padding: 40px;
+            flex-direction: column;
+            scroll-behavior: smooth;
+        }
+        .chat-tab.active-tab {
+            display: flex; /* Only show active tab */
+            animation: fadeInTab 0.4s ease forwards;
+        }
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- IMPROVED CHAT UI --- */
+        .message { display: flex; gap: 18px; margin-bottom: 25px; animation: slideInMsg 0.3s ease; }
+        @keyframes slideInMsg {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.user { flex-direction: row-reverse; }
+        
+        .avatar {
+            width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .bot-avatar { background: rgba(255,255,255,0.08); color: var(--primary); border: 1px solid var(--glass-border); }
+        .user-avatar { background: var(--accent-gradient); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+
+        .msg-text {
+            padding: 18px 24px; border-radius: 18px; font-size: 1.05rem; line-height: 1.65; max-width: 80%; position: relative;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); backdrop-filter: blur(10px);
+        }
+        
+        /* Bot Bubble */
+        .message.bot .msg-text {
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top-left-radius: 4px; color: var(--text-dim);
+        }
+        body.light-mode .message.bot .msg-text {
+            background: #ffffff; border: 1px solid rgba(0,0,0,0.05); color: var(--text-main);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        /* User Bubble */
+        .message.user .msg-text {
+            background: linear-gradient(135deg, var(--primary), #2979ff); color: #fff;
+            border-top-right-radius: 4px; box-shadow: 0 5px 20px var(--primary-glow);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .msg-text blockquote { border-left: 3px solid var(--primary); margin: 15px 0; padding-left: 20px; font-style: italic; background: rgba(255,255,255,0.02); color: var(--text-main); padding: 15px 20px; border-radius: 0 8px 8px 0; }
+        .msg-text pre { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; overflow-x: auto; border: 1px solid var(--glass-border); margin: 15px 0; }
+        .msg-text code { font-family: 'Courier New', monospace; color: var(--primary); background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px; }
+        .msg-text pre code { background: transparent; padding: 0; color: #e2e8f0; }
+        .msg-text strong { color: var(--primary); font-weight: 700; }
+
+        .typing-indicator { display: flex; gap: 5px; padding: 5px 10px; align-items: center; justify-content: center; height: 100%; }
+        .dot { width: 6px; height: 6px; background: var(--text-dim); border-radius: 50%; opacity: 0.7; animation: bounce 1.4s infinite ease-in-out both; }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        .quick-chips-container { display: flex; gap: 10px; padding: 0 10px 15px; overflow-x: auto; white-space: nowrap; -ms-overflow-style: none; scrollbar-width: none; }
+        .quick-chips-container::-webkit-scrollbar { display: none; }
+        .chip-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-dim); padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: 0.3s; font-family: 'Manrope', sans-serif; font-weight: 500; }
+        body.light-mode .chip-btn { background: rgba(0,0,0,0.05); }
+        .chip-btn:hover { border-color: var(--primary); color: #f8fafc; background: var(--primary); transform: translateY(-2px); }
+
+        .input-bar { 
+            display: flex; gap: 15px; background: rgba(0,0,0,0.3); padding: 12px; 
+            border-radius: 50px; border: 1px solid var(--glass-border); 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2); backdrop-filter: blur(10px);
+        }
+        body.light-mode .input-bar { background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.1); }
+        .input-bar input { flex: 1; background: transparent; border: none; color: var(--text-main); padding: 12px 20px; font-size: 1.1rem; }
+        .icon-btn { width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer; background: transparent; color: var(--text-dim); transition: 0.2s; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .icon-btn:hover { color: var(--primary); background: rgba(255,255,255,0.05); }
+        .send-btn { background: var(--primary); color: #f8fafc; }
+        .send-btn:hover { transform: scale(1.05); color: #fff; box-shadow: 0 0 15px var(--primary-glow); }
+
+        .template-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 25px; }
+        .template-item { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 30px 20px; border-radius: 16px; text-align: center; cursor: pointer; transition: 0.3s; }
+        body.light-mode .template-item { background: rgba(0,0,0,0.03); }
+        .template-item:hover { border-color: var(--primary); background: rgba(255,255,255,0.06); transform: translateY(-5px); }
+        .template-item i { font-size: 2.2rem; color: var(--primary); margin-bottom: 15px; display: block; }
+        .template-item span { font-size: 1rem; font-weight: 600; }
+        
+        .quiz-box { border: 1px solid var(--glass-border); padding: 40px; border-radius: 20px; background: rgba(0,0,0,0.2); }
+        .quiz-btn { width: 100%; padding: 18px; margin-bottom: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: var(--text-dim); text-align: left; cursor: pointer; border-radius: 12px; transition: 0.2s; font-size: 1rem; }
+        body.light-mode .quiz-btn { background: rgba(0,0,0,0.03); }
+        .quiz-btn:hover { border-color: var(--primary); color: var(--text-main); background: rgba(255,255,255,0.05); }
+        .quiz-btn.correct { border-color: #10b981; background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .quiz-btn.wrong { border-color: #ef4444; background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+        #glossary-list { column-count: 2; column-gap: 60px; }
+        #glossary-list li { margin-bottom: 15px; color: var(--text-dim); list-style: none; font-size: 1rem; line-height: 1.5; }
+        .glossary-term { color: var(--primary); font-weight: bold; border-bottom: 1px dotted var(--text-dim); cursor: help; margin-right: 5px; }
+
+        footer { margin-top: 80px; text-align: center; border-top: 1px solid var(--glass-border); padding-top: 40px; color: var(--text-dim); font-size: 0.9rem; }
+        .footer-links { display: flex; justify-content: center; gap: 30px; margin-top: 15px; }
+        .footer-link { color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 600; transition: 0.3s; }
+        .footer-link:hover { color: var(--primary); }
+
+        .links-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; }
+        .link-column h4 { color: var(--text-main); font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--glass-border); }
+        .link-list { list-style: none; padding: 0; }
+        .link-list li { margin-bottom: 15px; }
+        .link-list a { color: var(--text-dim); text-decoration: none; display: flex; align-items: center; gap: 10px; transition: 0.3s; font-size: 0.95rem; }
+        .link-list a:hover { color: var(--primary); transform: translateX(5px); }
+        .link-list i { color: var(--primary); font-size: 0.8rem; opacity: 0.8; }
+
+        @media (max-width: 900px) {
+            .hero-title { font-size: 3.2rem; }
+            .info-grid-row { grid-template-columns: 1fr; gap: 40px; margin: 60px 0; }
+            .info-grid-row.reverse { direction: ltr; }
+            .bottom-nav { width: 92%; justify-content: space-between; padding: 10px; }
+            .b-nav-btn { min-width: auto; padding: 10px; }
+            .b-nav-btn span { display: none; }
+            .b-nav-btn i { font-size: 1.4rem; }
+            #glossary-list { column-count: 1; }
+            .process-grid { grid-template-columns: 1fr; }
+            .step-number { position: relative; left: 0; transform: none; font-size: 3rem; margin-bottom: 10px; display: block; }
+            
+            /* MOBILE EXPERIENCE: Bottom Sheet Style for Workspace */
+            #app-workspace {
+                top: auto; bottom: 0; right: 0; left: 0; width: 100%; height: 90vh; /* Slides up like a drawer */
+                min-width: auto;
+                border-radius: 20px 20px 0 0;
+                box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+                border-top: 1px solid var(--glass-border);
+                border-left: none;
+                animation: slideUp 0.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+            }
+            @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+            
+            /* Disable side shift on mobile */
+            body.workspace-open .main-wrapper {
+                transform: none;
+                opacity: 1;
+                filter: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+    <div id="dust-container">
+    <div class="dust-layer small"></div>
+    <div class="dust-layer medium"></div>
+    <div class="dust-layer large"></div>
+</div>
+
+    <div id="preloader">
+        <div class="preloader-content-wrapper">
+            <img src="Images/logo.jpg" class="splash-logo-img" alt="NYAYA Logo">
+            <div class="loader-logo">NYAYA<span>.ai</span></div>
+            <div class="loader-line"></div>
         </div>
     </div>
-    <script src="script.js"></script>
-  </body>
+
+    <div class="transition-curtain" id="transition-curtain"></div>
+    
+<video autoplay muted loop playsinline id="bg-video">
+    <source src="Images/Video.mp4" type="video/mp4">
+</video>
+    
+    <div class="bg-wallpaper" id="bg-wallpaper"></div>
+
+    <div id="landing-page">
+        <div class="main-wrapper">
+            
+            <header class="top-center-header">
+                <div class="header-brand">
+                    <img src="Images/logo.jpg" class="header-logo-small" alt="Nyaya Logo">
+                    NYAYA.ai
+                </div>
+                <div class="header-controls">
+                    <button class="control-btn" onclick="toggleLang()" id="lang-btn">
+                        <i class="fa-solid fa-language"></i> <span id="lang-text">EN</span>
+                    </button>
+                    <button class="control-btn" onclick="toggleTheme(event)" id="theme-btn">
+                        <i class="fa-solid fa-sun"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="news-ticker">
+                <div class="ticker-content">
+                    <span><strong>LATEST:</strong> New BNSS laws implemented from July 1st...</span>
+                    <span><strong>UPDATE:</strong> Supreme Court launches new e-filing portal for faster processing...</span>
+                    <span><strong>NEWS:</strong> Digital Personal Data Protection Act to affect tech compliance...</span>
+                    <span><strong>ALERT:</strong> Cyber crime reporting now easier via National Cyber Crime Portal...</span>
+                </div>
+            </div>
+
+            <div class="hero-section">
+                <span class="hero-subtitle">JUSTICE DEMOCRATIZED</span>
+                <h1 class="hero-title">Legal Intelligence for<br>The Next Generation</h1>
+                
+                <div class="live-counter-box">
+                    <div class="counter-item">
+                        <span class="counter-val" data-target="395">0</span>
+                        <span class="counter-lbl">Articles</span>
+                    </div>
+                    <div class="counter-item">
+                        <span class="counter-val" data-target="15000">0</span>
+                        <span class="counter-lbl">Precedents</span>
+                    </div>
+                    <div class="counter-item">
+                        <span class="counter-val" data-target="98">0</span>
+                        <span class="counter-lbl">Accuracy %</span>
+                    </div>
+                </div>
+
+                <p class="hero-desc">Navigate the Indian Constitution, Bhartiya Nyaya Sanhita (BNS), and complex legal procedures with an advanced AI companion designed for citizens and professionals alike.</p>
+                <button class="control-btn" id="magnetic-cta" onclick="openWorkspace('constitution', 'Start Legal Chat', null)" style="margin:0 auto; padding: 18px 40px; font-size: 1.1rem; border-color: var(--primary); color: var(--primary); border-radius: 50px;">
+                    Start Legal Consultation <i class="fa-solid fa-arrow-right" style="margin-left: 10px;"></i>
+                </button>
+            </div>
+
+            <div class="logo-strip">
+                <p>POWERED BY OFFICIAL FRAMEWORKS</p>
+                <div class="logo-grid">
+                    <div class="gov-badge badge-orange">
+                        <i class="fa-solid fa-gears"></i>
+                        <span>Make In India</span>
+                    </div>
+
+                    <div class="gov-badge badge-blue">
+                        <i class="fa-solid fa-laptop-code"></i>
+                        <span>Digital India</span>
+                    </div>
+
+                    <div class="gov-badge badge-green">
+                        <i class="fa-solid fa-users-viewfinder"></i>
+                        <span>MyGov Platform</span>
+                    </div>
+
+                    <div class="gov-badge badge-red">
+                        <i class="fa-solid fa-fingerprint"></i>
+                        <span>UIDAI Aadhaar</span>
+                    </div>
+
+                    <div class="gov-badge badge-gold">
+                        <i class="fa-solid fa-landmark-dome"></i>
+                        <span>Supreme Court</span>
+                    </div>
+                    
+                    <div class="gov-badge badge-teal">
+                        <i class="fa-solid fa-file-signature"></i>
+                        <span>RTI Online</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="process-section">
+                <h3 class="section-tag">WORKFLOW</h3>
+                <h2 class="section-heading" style="font-size: 2.5rem;">How NYAYA Works</h2>
+                <div class="process-grid">
+                    <div class="process-step">
+                        <div class="step-number">01</div>
+                        <div class="step-icon"><i class="fa-solid fa-layer-group"></i></div>
+                        <h4 class="step-title">Select Module</h4>
+                        <p class="step-desc">Choose from Constitution, Criminal Code (BNS), or Legal Drafting based on your specific need.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">02</div>
+                        <div class="step-icon"><i class="fa-regular fa-comment-dots"></i></div>
+                        <h4 class="step-title">Consult AI</h4>
+                        <p class="step-desc">Ask questions in natural language (Hindi/English) or upload legal documents (PDF/Images) for analysis.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">03</div>
+                        <div class="step-icon"><i class="fa-solid fa-microchip"></i></div>
+                        <h4 class="step-title">Deep Analysis</h4>
+                        <p class="step-desc">Our engine cross-references millions of case laws, acts, and amendments to find accurate precedents.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">04</div>
+                        <div class="step-icon"><i class="fa-solid fa-file-signature"></i></div>
+                        <h4 class="step-title">Get Results</h4>
+                        <p class="step-desc">Receive instant summaries, drafted agreements, or prediction scores regarding your legal stance.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-container">
+                <h3 class="section-tag">CORE CAPABILITIES</h3>
+                <div class="cards-grid">
+                    <div class="card" onclick="openWorkspace('bns', 'BNS Decoder', null)" data-tilt>
+                        <div class="card-icon"><i class="fa-solid fa-gavel"></i></div>
+                        <h3>BNS Decoder</h3>
+                        <p>Instant interpretation of the new Bharatiya Nyaya Sanhita criminal codes replacing the IPC.</p>
+                    </div>
+                    <div class="card" onclick="openWorkspace('drafter', 'Legal Drafter', null)" data-tilt>
+                        <div class="card-icon"><i class="fa-solid fa-file-contract"></i></div>
+                        <h3>Legal Drafter</h3>
+                        <p>Generate precise legal documents, rental agreements, and affidavits in seconds.</p>
+                    </div>
+                    <div class="card" onclick="openWorkspace('judge', 'Verdict Predictor', null)" data-tilt>
+                        <div class="card-icon"><i class="fa-solid fa-brain"></i></div>
+                        <h3>Verdict AI</h3>
+                        <p>Analyze case scenarios against historical judgments to predict potential outcomes.</p>
+                    </div>
+                    <div class="card" onclick="openWorkspace('summarizer', 'Case Summaries', null)" data-tilt>
+                        <div class="card-icon"><i class="fa-solid fa-scale-unbalanced-flip"></i></div>
+                        <h3>Case Simplifier</h3>
+                        <p>Transform lengthy 100-page court judgments into concise, actionable summaries.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-grid-row">
+                <div class="text-content">
+                    <span class="section-tag">THE FOUNDATION</span>
+                    <h2 class="section-heading">The Constitution of India</h2>
+                    <p class="section-text">
+                        The supreme law of India, adopted on 26 November 1949, forms the backbone of the world's largest democracy. It guarantees justice, liberty, equality, and fraternity to all citizens. 
+                        <br><br>
+                        NYAYA.ai is trained on every Article, Schedule, and Amendment of this living document. Whether you are a student researching Fundamental Rights or a citizen inquiring about Directive Principles, our AI provides accurate, context-aware interpretations instantaneously.
+                    </p>
+                </div>
+                <div class="law-image-box">
+                    <img src="Images/Supreme_Court.png" alt="Supreme Court of India">
+                </div>
+            </div>
+
+            <div class="info-grid-row reverse">
+                <div class="text-content">
+                    <span class="section-tag">MODERN JUSTICE</span>
+                    <h2 class="section-heading">Bridging the Gap</h2>
+                    <p class="section-text">
+                        The Indian legal system is vast and complex. With over 4.5 crore pending cases, access to timely legal advice is a privilege many cannot afford.
+                        <br><br>
+                        We aim to bridge this gap. By digitizing legal logic, we empower common citizens to understand their standing before approaching a lawyer. From filing an FIR to understanding consumer rights, NYAYA.ai acts as your first line of legal defense.
+                    </p>
+                    
+                    <div class="tech-explained">
+                        <h4 style="color:var(--primary); margin-bottom:10px; font-family:'Playfair Display', serif;">Our Technology Stack</h4>
+                        <p style="font-size:0.9rem; color:var(--text-dim);">How we process legal complexity:</p>
+                        <ul class="tech-list">
+                            <li><i class="fa-solid fa-check"></i> <strong>Vector Embeddings:</strong> We convert legal texts into high-dimensional vectors to understand context, not just keywords.</li>
+                            <li><i class="fa-solid fa-check"></i> <strong>LLM Reasoning:</strong> Large Language Models summarize complex judgments into plain English/Hindi.</li>
+                            <li><i class="fa-solid fa-check"></i> <strong>RAG Architecture:</strong> Retrieval-Augmented Generation ensures answers are cited from actual legal code, reducing hallucinations.</li>
+                            <li><i class="fa-solid fa-check"></i> <strong>OCR Pipeline:</strong> Advanced optical character recognition allows users to upload scanned PDFs of court notices.</li>
+                        </ul>
+                    </div>
+
+                </div>
+                <div class="law-image-box">
+                    <img src="https://images.unsplash.com/photo-1589578527966-fdac0f44566c?q=80&w=2070&auto=format&fit=crop" alt="Gavel and Soundblock">
+                </div>
+            </div>
+
+            <div class="glass-container content-section">
+                <h3 class="content-title"><i class="fa-solid fa-copy"></i> <span data-en="Smart Templates" data-hi="स्मार्ट टेम्प्लेट">Smart Templates</span></h3>
+                <p class="content-body" data-en="Click to generate instant drafts for common legal needs." data-hi="त्वरित ड्राफ्ट बनाने के लिए क्लिक करें।">Click to generate instant drafts for common legal needs.</p>
+                <div class="template-grid">
+                    <div class="template-item" onclick="openTemplate('Rent Agreement')">
+                        <i class="fa-solid fa-house-chimney"></i>
+                        <span data-en="Rent Agreement" data-hi="किराया समझौता">Rent Agreement</span>
+                    </div>
+                    <div class="template-item" onclick="openTemplate('Affidavit')">
+                        <i class="fa-solid fa-stamp"></i>
+                        <span data-en="Affidavit" data-hi="शपथ पत्र">Affidavit</span>
+                    </div>
+                    <div class="template-item" onclick="openTemplate('Divorce Petition')">
+                        <i class="fa-solid fa-heart-crack"></i>
+                        <span data-en="Divorce Petition" data-hi="तलाक याचिका">Divorce Petition</span>
+                    </div>
+                    <div class="template-item" onclick="openTemplate('Internship Offer')">
+                        <i class="fa-solid fa-briefcase"></i>
+                        <span data-en="Job Offer" data-hi="नौकरी प्रस्ताव">Job Offer</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-container content-section" id="quiz-section">
+                <h3 class="content-title"><i class="fa-solid fa-lightbulb"></i> <span data-en="Legal IQ Daily" data-hi="दैनिक कानूनी ज्ञान">Legal IQ Daily</span></h3>
+                <div class="quiz-box" id="quiz-container">
+                    <div id="quiz-start-view" class="quiz-start-view">
+                        <p style="font-size:1.1rem; color:var(--text-dim); margin-bottom:20px;">Test your legal knowledge with 5 quick questions generated by AI.</p>
+                        <button class="start-quiz-btn" onclick="startQuiz()" style="background:var(--primary); color:#000; border:none; padding:12px 25px; border-radius:30px; cursor:pointer; font-weight:700;">
+                            <i class="fa-solid fa-play"></i> Start Legal Quiz
+                        </button>
+                    </div>
+                    <div id="quiz-active-view" style="display:none">
+                        <div class="quiz-header">
+                            <span class="quiz-score-badge">Round <span id="q-current">1</span>/5</span>
+                            <div style="display:flex; align-items:center; gap:15px; float:right;">
+                                <span style="font-size:0.9rem; color:var(--primary);">Score: <strong id="realtime-score">0</strong></span>
+                                <i class="fa-solid fa-rotate-right refresh-icon" onclick="refreshQuizQuestion()" title="Refresh Question" style="cursor:pointer; color:var(--text-dim);"></i>
+                            </div>
+                        </div>
+                        <div id="question-loader" style="display:none; text-align:center; padding:40px;">
+                            <i class="fa-solid fa-circle-notch fa-spin" style="color:var(--primary); font-size:2.5rem;"></i>
+                            <p style="margin-top:15px; color:var(--text-dim);">Consulting Legal Archives...</p>
+                        </div>
+                        <div id="question-content" style="margin-top:20px;">
+                            <p class="quiz-question" id="q-text" style="font-size:1.2rem; margin-bottom:20px;">Loading...</p>
+                            <div class="quiz-options" id="q-options"></div>
+                            <div id="q-feedback" style="margin-top:20px; min-height:30px; font-size:1rem;"></div>
+                            <button class="nav-btn" id="next-q-btn" onclick="nextQuestion()" style="margin-top:20px; display:none; border:1px solid var(--primary); color:var(--primary); width:auto; padding:12px 25px; background:transparent; border-radius:30px; cursor:pointer;">
+                                Next Question <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="quiz-result-view" style="display:none; text-align:center; padding:30px;">
+                        <i class="fa-solid fa-trophy" style="font-size:4rem; color:var(--primary); margin-bottom:20px;"></i>
+                        <h2 style="color:var(--text-main); margin-bottom:15px; font-family:'Playfair Display', serif;">Quiz Completed!</h2>
+                        <p style="font-size:1.3rem; color:var(--text-dim); margin-bottom:30px;">Your Final Score: <strong style="color:var(--primary); font-size:2rem;"><span id="final-score">0</span>/5</strong></p>
+                        <button class="start-quiz-btn" onclick="resetQuiz()" style="background:var(--primary); color:#000; border:none; padding:12px 25px; border-radius:30px; cursor:pointer; font-weight:700;">Take Another Quiz</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-container content-section">
+                <h3 class="content-title" data-en="Legal Glossary" data-hi="कानूनी शब्दावली">
+                    Legal Glossary
+                    <button onclick="loadGlossary()" title="Refresh Terms" style="background:none; border:none; color:var(--text-dim); cursor:pointer;"><i class="fa-solid fa-rotate"></i></button>
+                </h3>
+                <div class="content-body">
+                    <p data-en="Hover over terms to learn their meaning:" data-hi="अर्थ जानने के लिए शब्दों पर होवर करें:">Hover over terms to learn their meaning:</p>
+                    <ul id="glossary-list">
+                        <li>Loading AI terms...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="glass-container">
+                <h3 class="section-tag">IMPORTANT RESOURCES</h3>
+                <div class="links-wrapper">
+                    <div class="link-column">
+                        <h4><i class="fa-solid fa-building-columns"></i> National Portals</h4>
+                        <ul class="link-list">
+                            <li><a href="https://www.india.gov.in/" target="_blank"><i class="fa-solid fa-chevron-right"></i> National Portal of India</a></li>
+                            <li><a href="https://www.digitalindia.gov.in/" target="_blank"><i class="fa-solid fa-chevron-right"></i> Digital India</a></li>
+                            <li><a href="https://www.mygov.in/" target="_blank"><i class="fa-solid fa-chevron-right"></i> MyGov Platform</a></li>
+                            <li><a href="https://uidai.gov.in/" target="_blank"><i class="fa-solid fa-chevron-right"></i> UIDAI (Aadhaar)</a></li>
+                        </ul>
+                    </div>
+                    <div class="link-column">
+                        <h4><i class="fa-solid fa-gavel"></i> Judiciary & Law</h4>
+                        <ul class="link-list">
+                            <li><a href="https://main.sci.gov.in/" target="_blank"><i class="fa-solid fa-chevron-right"></i> Supreme Court of India</a></li>
+                            <li><a href="https://ecourts.gov.in/" target="_blank"><i class="fa-solid fa-chevron-right"></i> e-Courts Services</a></li>
+                            <li><a href="https://doj.gov.in/" target="_blank"><i class="fa-solid fa-chevron-right"></i> Department of Justice</a></li>
+                            <li><a href="https://nalsa.gov.in/" target="_blank"><i class="fa-solid fa-chevron-right"></i> Legal Aid (NALSA)</a></li>
+                        </ul>
+                    </div>
+                    <div class="link-column">
+                        <h4><i class="fa-solid fa-book-open"></i> Essential Services</h4>
+                        <ul class="link-list">
+                            <li><a href="https://rtionline.gov.in/" target="_blank"><i class="fa-solid fa-chevron-right"></i> RTI Online</a></li>
+                            <li><a href="https://cybercrime.gov.in/" target="_blank"><i class="fa-solid fa-chevron-right"></i> Cyber Crime Portal</a></li>
+                            <li><a href="https://consumeraffairs.nic.in/" target="_blank"><i class="fa-solid fa-chevron-right"></i> Consumer Affairs</a></li>
+                            <li><a href="https://legislative.gov.in/" target="_blank"><i class="fa-solid fa-chevron-right"></i> Legislative Dept (India Code)</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <footer>
+                <div class="footer-links">
+                    <a href="https://github.com/Priyanksolanki9853" target="_blank" class="footer-link">
+                        <i class="fa-brands fa-github"></i> <span>GitHub</span>
+                    </a>
+                    <a href="mailto:priyanksolanki9853@gmail.com" class="footer-link">
+                        <i class="fa-solid fa-envelope"></i> <span>Email</span>
+                    </a>
+                </div>
+                <p style="margin-top:20px;">© 2025 NYAYA.ai. Empowering Justice with Artificial Intelligence.</p>
+            </footer>
+        </div>
+    </div>
+
+    <div class="sos-wrapper">
+        <div class="sos-menu" id="sos-menu">
+            <a href="tel:100" class="sos-link"><i class="fa-solid fa-phone"></i> Dial 100 (Police)</a>
+            <a href="https://cybercrime.gov.in/" target="_blank" class="sos-link"><i class="fa-solid fa-user-shield"></i> Cyber Crime</a>
+            <a href="https://nalsa.gov.in/" target="_blank" class="sos-link"><i class="fa-solid fa-scale-balanced"></i> Free Legal Aid</a>
+        </div>
+        <button class="sos-btn" onclick="toggleSOS()">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </button>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="b-nav-btn active" id="btn-home" onclick="goHome()">
+            <i class="fa-solid fa-house"></i> <span>Home</span>
+        </button>
+        <button class="b-nav-btn" onclick="openWorkspace('constitution', 'Rights & Rules', this)">
+            <i class="fa-solid fa-book-atlas"></i> <span>Rights</span>
+        </button>
+        <button class="b-nav-btn" onclick="openWorkspace('bns', 'BNS Code', this)">
+            <i class="fa-solid fa-gavel"></i> <span>BNS</span>
+        </button>
+        <button class="b-nav-btn" onclick="openWorkspace('judge', 'Verdict', this)">
+            <i class="fa-solid fa-scale-unbalanced"></i> <span>Verdict</span>
+        </button>
+        <button class="b-nav-btn" onclick="openWorkspace('drafter', 'Drafter', this)">
+            <i class="fa-solid fa-file-pen"></i> <span>Draft</span>
+        </button>
+    </div>
+
+    <div id="app-workspace">
+        <div class="workspace-header">
+            <div class="ws-title">
+                <i class="fa-solid fa-layer-group"></i>
+                <span id="active-mode-title">Rights & Rules</span>
+            </div>
+            <div style="display:flex; gap:10px">
+                <button class="back-btn" onclick="toggleMaximize()" style="background:transparent; color:var(--text-dim); border:none; cursor:pointer;">
+    <i class="fa-solid fa-expand" id="max-btn-icon"></i> <span id="max-btn-text"></span>
+</button>
+                <button class="back-btn" onclick="minimizeWorkspace()" style="background:transparent; color:var(--text-dim); border:none; cursor:pointer;">
+                    <i class="fa-solid fa-minus"></i>
+                </button>
+                <button class="back-btn" onclick="goHome()" style="background:rgba(200,50,50,0.1); border:1px solid rgba(200,50,50,0.3); color:#ff6b6b; padding:5px 15px; border-radius:20px; cursor:pointer;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="chat-wrapper"></div>
+
+        <div class="workspace-footer">
+            <div id="quick-chips" class="quick-chips-container"></div>
+            
+            <div class="input-bar">
+                <button class="icon-btn" onclick="document.getElementById('file-input').click()" title="Upload File"><i class="fa-solid fa-paperclip"></i></button>
+                <input type="file" id="file-input" style="display:none" onchange="uploadPDF()">
+                
+                <input type="text" id="user-input" placeholder="Ask anything legal..." autocomplete="off">
+                
+                <button class="icon-btn" id="mic-btn" onclick="startListening()"><i class="fa-solid fa-microphone"></i></button>
+                <button class="icon-btn send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000"; 
+        let currentMode = "constitution"; 
+        let currentLang = 'EN';
+
+        let quizScore = 0;
+        let quizCurrentQuestion = 0;
+        const totalQuizQuestions = 5;
+        let isQuizLoading = false;
+
+        function toggleSOS() {
+            const menu = document.getElementById('sos-menu');
+            menu.classList.toggle('active');
+        }
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const preloader = document.getElementById('preloader');
+                preloader.classList.add('zoom-out-exit');
+                setTimeout(() => { preloader.style.display = 'none'; }, 800);
+            }, 2000);
+
+            loadGlossary();
+            
+            VanillaTilt.init(document.querySelectorAll(".card"), {
+                max: 12, speed: 400, glare: true, "max-glare": 0.2, scale: 1.05
+            });
+
+            const magBtn = document.getElementById('magnetic-cta');
+            if(magBtn) {
+                magBtn.addEventListener('mousemove', (e) => {
+                    const rect = magBtn.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    magBtn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+                    magBtn.style.transition = 'transform 0.1s';
+                });
+                
+                magBtn.addEventListener('mouseleave', () => {
+                    magBtn.style.transform = 'translate(0, 0)';
+                    magBtn.style.transition = 'all 0.3s';
+                });
+            }
+
+            // Animate Live Counter
+            const counters = document.querySelectorAll('.counter-val');
+            counters.forEach(counter => {
+                const target = +counter.getAttribute('data-target');
+                const increment = target / 100;
+                let current = 0;
+                const updateCount = () => {
+                    current += increment;
+                    if(current < target) {
+                        counter.innerText = Math.ceil(current) + (target > 100 ? '+' : '%');
+                        setTimeout(updateCount, 20);
+                    } else {
+                        counter.innerText = target + (target > 100 ? '+' : '%');
+                    }
+                };
+                updateCount();
+            });
+
+            const stepObserver = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if(entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.classList.add('active-step');
+                        }, index * 100); 
+                    }
+                });
+            }, { threshold: 0.5 });
+            document.querySelectorAll('.process-step').forEach(step => stepObserver.observe(step));
+        });
+
+        const themes = {
+            constitution: { primary: '#00e5ff' }, /* Cyan */
+            judge: { primary: '#2979ff' },
+            bns: { primary: '#00bfa5' },
+            drafter: { primary: '#00e5ff' },
+            simplify: { primary: '#0091ea' },
+            summarizer: { primary: '#00e676' }
+        };
+
+        function applyTheme(mode) {
+            const theme = themes[mode] || themes.constitution;
+            document.documentElement.style.setProperty('--primary', theme.primary);
+            document.documentElement.style.setProperty('--primary-glow', theme.primary + '4d');
+        }
+
+        function toggleLang() {
+            const btn = document.getElementById('lang-btn');
+            const span = document.getElementById('lang-text');
+            if(currentLang === 'EN') {
+                currentLang = 'HI'; span.innerText = 'HI'; btn.classList.add('active');
+            } else {
+                currentLang = 'EN'; span.innerText = 'EN'; btn.classList.remove('active');
+            }
+            const elements = document.querySelectorAll('[data-en]');
+            elements.forEach(el => {
+                el.innerText = currentLang === 'EN' ? el.getAttribute('data-en') : el.getAttribute('data-hi');
+            });
+        }
+
+        // FUNCTIONAL ADDITION: Circular Transition
+        function toggleTheme(event) {
+            const isDark = !document.body.classList.contains('light-mode');
+            
+            // If browser supports View Transitions
+            if (document.startViewTransition) {
+                const x = event.clientX;
+                const y = event.clientY;
+                const endRadius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+
+                const transition = document.startViewTransition(() => {
+                    document.body.classList.toggle('light-mode');
+                    const btn = document.getElementById('theme-btn');
+                    const icon = btn.querySelector('i');
+                    icon.className = document.body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+                });
+
+                transition.ready.then(() => {
+                    const clipPath = [
+                        `circle(0px at ${x}px ${y}px)`,
+                        `circle(${endRadius}px at ${x}px ${y}px)`,
+                    ];
+                    document.documentElement.animate(
+                        {
+                            clipPath: isDark ? [...clipPath].reverse() : clipPath,
+                        },
+                        {
+                            duration: 500,
+                            easing: 'ease-in',
+                            pseudoElement: isDark ? '::view-transition-old(root)' : '::view-transition-new(root)',
+                        }
+                    );
+                });
+            } else {
+                // Fallback
+                document.body.classList.toggle('light-mode');
+                const btn = document.getElementById('theme-btn');
+                const icon = btn.querySelector('i');
+                icon.className = document.body.classList.contains('light-mode') ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+            }
+        }
+
+        async function loadGlossary() {
+            const list = document.getElementById('glossary-list');
+            list.innerHTML = '<li style="text-align:center; list-style:none;"><i class="fa-solid fa-circle-notch fa-spin"></i> Generating Legal Terms...</li>';
+            try {
+                const response = await fetch(`${API_URL}/glossary?t=${Date.now()}`);
+                const data = await response.json();
+                list.innerHTML = '';
+                data.forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong class="glossary-term" data-desc="${item.desc}">${item.term}</strong>: ${item.desc}`;
+                    list.appendChild(li);
+                });
+            } catch (e) {
+                list.innerHTML = '<li>Failed to load glossary. Try refreshing.</li>';
+            }
+        }
+
+        function startQuiz() {
+            quizScore = 0;
+            quizCurrentQuestion = 0;
+            document.getElementById('quiz-start-view').style.display = 'none';
+            document.getElementById('quiz-result-view').style.display = 'none';
+            document.getElementById('quiz-active-view').style.display = 'block';
+            document.getElementById('realtime-score').innerText = '0';
+            nextQuestion();
+        }
+
+        function resetQuiz() {
+            document.getElementById('quiz-result-view').style.display = 'none';
+            document.getElementById('quiz-start-view').style.display = 'block';
+        }
+
+        function refreshQuizQuestion() {
+            quizCurrentQuestion--; 
+            nextQuestion();
+        }
+
+        async function nextQuestion() {
+            quizCurrentQuestion++;
+            if (quizCurrentQuestion > totalQuizQuestions) {
+                showQuizResults(); return;
+            }
+            document.getElementById('q-current').innerText = quizCurrentQuestion;
+            document.getElementById('q-feedback').innerHTML = '';
+            document.getElementById('next-q-btn').style.display = 'none';
+            document.getElementById('question-content').style.opacity = '0.3';
+            document.getElementById('question-loader').style.display = 'block';
+
+            try {
+                const response = await fetch(`${API_URL}/daily_quiz?t=${Date.now()}`);
+                const data = await response.json();
+                document.getElementById('question-loader').style.display = 'none';
+                document.getElementById('question-content').style.opacity = '1';
+                document.getElementById('q-text').innerText = data.question;
+                const optionsDiv = document.getElementById('q-options');
+                optionsDiv.innerHTML = '';
+                data.options.forEach((opt, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'quiz-btn';
+                    btn.innerText = opt;
+                    btn.onclick = () => handleQuizAnswer(btn, index, data.correct_index, data.explanation);
+                    optionsDiv.appendChild(btn);
+                });
+            } catch (e) {
+                document.getElementById('q-text').innerText = "Error loading question.";
+                document.getElementById('question-loader').style.display = 'none';
+            }
+        }
+
+        function handleQuizAnswer(selectedBtn, selectedIndex, correctIndex, explanation) {
+            const allBtns = document.querySelectorAll('.quiz-btn');
+            allBtns.forEach(btn => btn.disabled = true);
+            const feedback = document.getElementById('q-feedback');
+            if (selectedIndex === correctIndex) {
+                selectedBtn.classList.add('correct');
+                quizScore++;
+                document.getElementById('realtime-score').innerText = quizScore;
+                feedback.innerHTML = `<span style="color:#10b981"><i class="fa-solid fa-check-circle"></i> Correct! ${explanation}</span>`;
+            } else {
+                selectedBtn.classList.add('wrong');
+                allBtns[correctIndex].classList.add('correct');
+                feedback.innerHTML = `<span style="color:#ef4444"><i class="fa-solid fa-times-circle"></i> Incorrect. ${explanation}</span>`;
+            }
+            document.getElementById('next-q-btn').style.display = 'inline-flex';
+        }
+
+        function showQuizResults() {
+            document.getElementById('quiz-active-view').style.display = 'none';
+            document.getElementById('quiz-result-view').style.display = 'block';
+            document.getElementById('final-score').innerText = quizScore;
+        }
+
+        function openTemplate(templateName) {
+            openWorkspace('drafter', 'Drafts & Docs', null);
+            setTimeout(() => {
+                const msg = `Generate a ${templateName} template for me.`;
+                document.getElementById('user-input').value = msg;
+                sendMessage();
+            }, 800);
+        }
+
+        function speakText(textId) {
+            const text = document.getElementById(textId).innerText;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = currentLang === 'HI' ? 'hi-IN' : 'en-IN';
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function triggerTransition(callback) {
+            const curtain = document.getElementById('transition-curtain');
+            curtain.classList.add('active');
+            setTimeout(() => { callback(); }, 500); 
+            setTimeout(() => { curtain.classList.remove('active'); }, 1200); 
+        }
+
+        function openWorkspace(mode, title, btnElement) {
+            currentMode = mode;
+            applyTheme(mode);
+            triggerTransition(() => {
+                document.body.classList.add('workspace-open'); // Trigger Side Animation
+                
+                document.getElementById('bg-wallpaper').classList.add('active');
+                document.getElementById('app-workspace').style.display = 'flex';
+                document.getElementById('active-mode-title').innerText = title;
+                
+                document.querySelectorAll('.b-nav-btn').forEach(btn => btn.classList.remove('active'));
+                if(btnElement) btnElement.classList.add('active');
+                
+                // Hide all chat tabs first
+                document.querySelectorAll('.chat-tab').forEach(tab => tab.classList.remove('active-tab'));
+                
+                let chatTab = document.getElementById(`chat-${mode}`);
+                if (!chatTab) {
+                    chatTab = document.createElement('div');
+                    chatTab.id = `chat-${mode}`;
+                    chatTab.className = 'chat-tab';
+                    document.getElementById('chat-wrapper').appendChild(chatTab);
+                    addMessage(`Welcome to ${title}. How can I assist you today?`, 'bot', false, `chat-${mode}`);
+                }
+                
+                // Only show the active one
+                chatTab.classList.add('active-tab');
+                renderQuickChips(mode);
+            });
+        }
+
+        // NEW: Minimize Logic - Simply slides down without full exit
+        function minimizeWorkspace() {
+            document.body.classList.remove('workspace-open'); // Reset Side Animation
+            
+            const ws = document.getElementById('app-workspace');
+            ws.style.transform = 'translateY(100%)';
+            setTimeout(() => {
+                ws.style.display = 'none';
+                ws.style.transform = ''; // Reset for next open
+                document.getElementById('bg-wallpaper').classList.remove('active');
+            }, 500);
+            
+            document.querySelectorAll('.b-nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-home').classList.add('active');
+        }
+
+        function toggleMaximize() {
+    const ws = document.getElementById('app-workspace');
+    ws.classList.toggle('workspace-maximized');
+
+    const icon = document.getElementById('max-btn-icon');
+    const text = document.getElementById('max-btn-text');
+    
+    // Check if maximized to toggle icon and text
+    if (ws.classList.contains('workspace-maximized')) {
+        icon.classList.remove('fa-expand');
+        icon.classList.add('fa-compress');
+        text.innerText = "Restore";
+    } else {
+        icon.classList.remove('fa-compress');
+        icon.classList.add('fa-expand');
+        text.innerText = "Maximize";
+    }
+}
+
+        const quickChipsData = {
+            'constitution': ['Fundamental Rights', 'Preamble', 'Article 21', 'Directive Principles', 'Emergency Provisions'],
+            'bns': ['Murder Punishment', 'Theft Definition', 'BNS 101', 'Cyber Crime', 'Self Defense'],
+            'judge': ['Civil Case Prediction', 'Divorce Alimony', 'Property Dispute', 'Cheque Bounce', 'Consumer Court'],
+            'drafter': ['Rent Agreement', 'Freelance Contract', 'Resignation Letter', 'Sale Deed', 'PoA'],
+            'summarizer': ['Summarize Judgement', 'Key Points', 'Legal Precedents']
+        };
+
+        function renderQuickChips(mode) {
+            const chipsContainer = document.getElementById('quick-chips');
+            chipsContainer.innerHTML = '';
+            const chips = quickChipsData[mode] || quickChipsData['constitution'];
+            chips.forEach(chip => {
+                const btn = document.createElement('button');
+                btn.className = 'chip-btn';
+                btn.innerText = chip;
+                btn.onclick = () => {
+                    document.getElementById('user-input').value = chip;
+                    sendMessage();
+                };
+                chipsContainer.appendChild(btn);
+            });
+        }
+
+        function goHome() {
+            triggerTransition(() => {
+                document.body.classList.remove('workspace-open'); // Reset Side Animation
+                
+                document.getElementById('bg-wallpaper').classList.remove('active');
+                document.getElementById('app-workspace').style.display = 'none';
+                applyTheme('constitution');
+                document.querySelectorAll('.b-nav-btn').forEach(btn => btn.classList.remove('active'));
+                document.getElementById('btn-home').classList.add('active');
+            });
+        }
+
+        async function sendMessage() {
+            const inputField = document.getElementById("user-input");
+            const message = inputField.value.trim();
+            if (message === "") return;
+            const activeTabId = `chat-${currentMode}`;
+            addMessage(message, "user", false, activeTabId);
+            inputField.value = "";
+            const loadingId = addMessage("Thinking...", "bot", true, activeTabId);
+            try {
+                const response = await fetch(`${API_URL}/search?query=${encodeURIComponent(message)}&mode=${currentMode}&lang=${currentLang}`);
+                const data = await response.json();
+                const loader = document.getElementById(loadingId);
+                if(loader) loader.remove();
+                let formattedText = typeof marked !== 'undefined' ? marked.parse(data.result) : data.result;
+                if (data.source && data.source.includes("Drafter")) {
+                    const draftId = "draft-" + Date.now();
+                    formattedText = `<div id="${draftId}">${formattedText}</div><button class="back-btn" style="margin-top:15px; width:fit-content; cursor:pointer; padding:8px 15px; border-radius:5px; border:1px solid var(--primary); background:transparent; color:var(--text-main);" onclick="downloadPDF('${draftId}')"><i class="fa-solid fa-download"></i> Download PDF</button>`;
+                }
+                if (data.source) formattedText += `<div style="font-size:0.75rem; color:var(--primary); margin-top:10px; font-weight:600; text-transform:uppercase;">SOURCE: ${data.source}</div>`;
+                addMessage(formattedText, "bot", false, activeTabId);
+            } catch (error) {
+                const loader = document.getElementById(loadingId);
+                if(loader) loader.remove();
+                addMessage("⚠️ Connection error. Please ensure backend is running.", "bot", false, activeTabId);
+            }
+        }
+
+        function addMessage(content, sender, isLoading = false, targetId) {
+            const container = document.getElementById(targetId);
+            if (!container) return; 
+            const div = document.createElement("div");
+            div.className = "message " + sender;
+            div.id = "msg-" + Date.now();
+            const avatarClass = sender === 'user' ? 'user-avatar' : 'bot-avatar';
+            const icon = sender === 'user' ? '<i class="fa-regular fa-user"></i>' : '<i class="fa-solid fa-robot"></i>';
+            let ttsHtml = '';
+            if(sender === 'bot' && !isLoading) {
+                const textId = 'txt-' + div.id;
+                content = `<span id="${textId}">${content}</span>`;
+                ttsHtml = `<button class="tts-btn" onclick="speakText('${textId}')" style="background:transparent; border:none; color:var(--primary); margin-left:10px; cursor:pointer;"><i class="fa-solid fa-volume-high"></i></button>`;
+            }
+            div.innerHTML = `
+                <div class="avatar ${avatarClass}">${icon}</div>
+                <div class="msg-text">${content} ${ttsHtml}</div>
+            `;
+            if (isLoading) {
+                div.querySelector('.msg-text').innerHTML = `
+                    <div class="typing-indicator">
+                        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                    </div>
+                `;
+            }
+            container.appendChild(div);
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+            return div.id;
+        }
+
+        async function uploadPDF() {
+            const file = document.getElementById('file-input').files[0];
+            if (!file) return;
+            const activeTabId = `chat-${currentMode}`;
+            addMessage(`Uploading: ${file.name}`, "user", false, activeTabId);
+            const loadingId = addMessage("Analyzing document...", "bot", true, activeTabId);
+            const formData = new FormData();
+            formData.append("file", file);
+            try {
+                const response = await fetch(`${API_URL}/analyze_pdf`, { method: 'POST', body: formData });
+                const data = await response.json();
+                const loader = document.getElementById(loadingId);
+                if(loader) loader.remove();
+                addMessage(marked.parse(data.result), "bot", false, activeTabId);
+            } catch (error) {
+                const loader = document.getElementById(loadingId);
+                if(loader) loader.remove();
+                addMessage("Upload failed.", "bot", false, activeTabId);
+            }
+        }
+
+        function downloadPDF(elementId) {
+            const element = document.getElementById(elementId);
+            const opt = { margin: 1, filename: 'Legal_Draft.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+            const oldColor = element.style.color;
+            element.style.color = "black"; element.style.background = "white"; element.style.padding = "20px";
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.style.color = oldColor; element.style.background = "transparent"; element.style.padding = "0";
+            });
+        }
+
+        function startListening() {
+            if (!("webkitSpeechRecognition" in window)) { alert("Browser not supported"); return; }
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = currentLang === 'HI' ? "hi-IN" : "en-IN";
+            recognition.onstart = () => document.getElementById('mic-btn').style.color = "var(--primary)";
+            recognition.onend = () => document.getElementById('mic-btn').style.color = "";
+            recognition.onresult = (e) => document.getElementById('user-input').value = e.results[0][0].transcript;
+            recognition.start();
+        }
+
+        document.getElementById("user-input").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
+    </script>
+</body>
 </html>
