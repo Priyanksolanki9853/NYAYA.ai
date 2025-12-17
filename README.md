@@ -108,7 +108,7 @@ samvidhan-ai/
 
 ### Steps
 1.  **Clone the Repo:** ```bash
-    git clone [https://github.com/your-username/samvidhan-ai.git](https://github.com/your-username/samvidhan-ai.git)
+    git clone (https://github.com/Priyanksolanki9853/NYAYA.ai)
     cd samvidhan-ai
     ```
 2.  **Install Backend Environment:** ```bash
