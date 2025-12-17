@@ -143,6 +143,3 @@ samvidhan-ai/
 
 ---
 
-<div align="center">
-  <sub>Built with 💻 & ☕ by Priyank Solanki. © 2025 All Rights Reserved.</sub>
-</div>
