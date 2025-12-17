@@ -53,7 +53,23 @@ NYAYA.ai ensures legal precision by eliminating AI hallucinations through a veri
 
 ---
 
+## 📂 Project Structure
+
+samvidhan-ai/
+├── backend/            # FastAPI Server
+│   ├── main.py         # Primary API endpoints
+│   ├── venv/           # Virtual Environment
+│   ├── .env            # API Keys (Protected)
+│   └── requirements.txt
+├── frontend/           # UI Workspace
+│   ├── index.html      # Main Dashboard
+│   ├── style.css       # Glassmorphism UI logic
+│   └── script.js       # Frontend API handlers
+├── data/               # Legal PDF Datasets
+└── README.md           # Project Documentation
 ## 🛠️ Tech Stack
+
+---
 
 | Layer | Technology |
 | :--- | :--- |
@@ -98,8 +114,21 @@ NYAYA.ai ensures legal precision by eliminating AI hallucinations through a veri
 
 ---
 
+Roadmap & Future Vision
+[x] Phase 1: Core RAG pipeline and BNS/IPC mapping.
+
+[x] Phase 2: Automated Document Drafting.
+
+[ ] Phase 3: Support for 12+ regional Indian languages via Whisper API.
+
+[ ] Phase 4: Fine-tuning on 50,000+ landmark Supreme Court judgments.
+
+[ ] Phase 5: Mobile App (iOS/Android) using Flutter.
+
+---
+
 ## 📜 Disclaimer
 *NYAYA.ai is an experimental tool provided for educational and informational purposes only. It does not constitute formal legal advice. Always consult a certified legal professional for official matters. Predictions made by the AI Judge are based on data patterns and do not guarantee actual court outcomes.*
 
 ---
-**Developed with ❤️ for Legal Literacy in India** 🇮🇳
+**Developed by Priyank Solanki with ❤️ for Legal Literacy in India** 🇮🇳
