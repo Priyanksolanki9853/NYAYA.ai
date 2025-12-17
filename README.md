@@ -8,6 +8,15 @@
 
 ---
 
+## 🌐 Live Demo
+
+🚀 **Frontend:** https://samvidhan-ai-psi.vercel.app/
+⚙️ **Backend API:** https://jain-mayukh-samvidhan-ai.hf.space
+
+> ⚠️ *Note:* The backend may take a few seconds to wake up on first request due to free-tier hosting.
+
+---
+
 ## 📸 Interface Preview
 
 ### 🏠 Landing Dashboard
@@ -130,6 +139,18 @@ samvidhan-ai/
 [ ] Phase 4: Fine-tuning on 50,000+ landmark Supreme Court judgments.
 
 [ ] Phase 5: Mobile App (iOS/Android) using Flutter.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! 🚀
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
